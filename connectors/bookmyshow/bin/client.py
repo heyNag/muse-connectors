@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
 """BookMyShow stdio MCP client.
 
-Spawns the local BookMyShow MCP server (a public scraper, no auth) as a
-child process over stdio and exposes its tools as list-tools / call-tool
-commands, following the shape of the hosted MCP client template in the
-custom-connector-setup skill. The hosted template speaks Streamable HTTP
-with a credential header, which does not apply here: this server runs
-only locally over stdio, so this client manages the child process and
-its JSON-RPC exchange instead. No credentials are used or passed.
+Spawns the local BookMyShow MCP server over stdio; no auth.
 
 Usage:
     python3 bin/client.py list-tools

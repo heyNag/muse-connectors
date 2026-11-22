@@ -4,7 +4,7 @@ A Muse connector for BookMyShow. Search movies and live events, read showtimes, 
 
 - Display name: **BookMyShow**
 - Internal Muse slug: `custom.bookmyshow`
-- Version: **2026.11.22.2** (2026-11-22, third release of the day; date-based CalVer YYYY.MM.DD, with .1/.2/.3 for extra releases the same day; adds LICENSE, example usage, troubleshooting and a contributing guide)
+- Version: **2026.11.22.3** (date-based CalVer YYYY.MM.DD, with .1/.2/.3 for extra releases the same day)
 - No login, no API key needed. It reads public BookMyShow pages.
 
 ## Tools
@@ -17,14 +17,14 @@ See [CONNECTOR.md](CONNECTOR.md) for the full connector documentation.
 
 Once installed, ask Muse things like:
 
-- "Search BookMyShow for Dear Jim Carrey in Hyderabad"
+- "Search BookMyShow for a comedy show in Hyderabad"
 - "What movies are playing in Hyderabad?"
 - "What comedy shows are on in Bengaluru this weekend?"
 
 To call a tool directly, write the arguments as a JSON file and pass it with `--arguments-file`:
 
 ```bash
-echo '{"query": "Dear Jim Carrey", "city": "hyderabad"}' > /tmp/bms-args/search.json
+echo '{"query": "standup comedy", "city": "hyderabad"}' > /tmp/bms-args/search.json
 python3 bin/client.py call-tool --name bms_search --arguments-file /tmp/bms-args/search.json
 ```
 
@@ -74,7 +74,7 @@ cd ~/workspace/custom-connectors/custom.bookmyshow
 python3 bin/client.py list-tools
 ```
 
-Check which version you have in `connector.yaml` (`version:`) or on the [releases page](https://github.com/heyNag/muse-connectors/releases) — for example, `2026.11.22.1` is the second release of 2026-11-22.
+Check which version you have in `connector.yaml` (`version:`) or on the [releases page](https://github.com/heyNag/muse-connectors/releases).
 
 ## Uninstall
 
@@ -86,7 +86,7 @@ rm -rf ~/workspace/custom-connectors/custom.bookmyshow
 
 You can also delete the cloned `muse-connectors` repo if you no longer need it. There is no credential to revoke, since this connector uses no login or API key.
 
-The MCP server source in `server/` is the public `m0han-r/bookmyshow-mcp-webscraper` repo, pinned at commit `848707a12c2679d9414fb6184b64bd9f5df57c7d` (MIT).
+The MCP server source in `server/` is the public `m0han-r/bookmyshow-mcp-webscraper` repo, pinned at commit `848707a12c2679d9414fb6184b64bd9f5df57c7d` (MIT). Note: `server/` is vendored upstream at its own version 1.0.0; the connector's version is the CalVer one in `connector.yaml`. Its badges refer to the upstream repo.
 
 ## Troubleshooting
 
@@ -96,4 +96,4 @@ The MCP server source in `server/` is the public `m0han-r/bookmyshow-mcp-webscra
 
 ## Limitation
 
-The server scrapes BookMyShow website pages (it is not an official API) and reads the data embedded in those pages. BookMyShow's Cloudflare protection can return HTTP 403 to the scraper from some machines, in which case tools return well-formed empty results even for known-live shows. An empty result is therefore not proof that an event does not exist. The browser route on BookMyShow passes Cloudflare and is the fallback for live searches and for booking. This connector cannot book tickets, select seats, or pay.
+The server scrapes BookMyShow website pages (it is not an official API) and reads the data embedded in those pages. BookMyShow's Cloudflare protection can return HTTP 403 to the scraper from some machines, in which case tools return well-formed empty results even for known-live shows. An empty result is therefore not proof that an event does not exist. The browser route on BookMyShow passes Cloudflare and is the fallback for live searches and for booking. This connector cannot book tickets, select seats, or pay. The bundled FastAPI server is not used by this connector; if you run it, review its CORS settings first.
