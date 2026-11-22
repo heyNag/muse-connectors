@@ -12,19 +12,25 @@ jobs:
   keep-latest-2:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out the repo
+        # Needed so the shared .github/actions/gh-release action below
+        # is available on the runner.
+        uses: actions/checkout@v4
+
       - name: Delete releases older than the latest 2
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          # List up to 1000 releases so the keep-2 policy does not silently stop after 100 releases.
-          # --repo is required: this job does not check out the repo, so gh
-          # cannot work out which repository to act on from a git remote.
-          tags=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName')
-          echo "Releases (newest first):"
-          echo "$tags"
-          echo "$tags" | tail -n +3 | while read -r tag; do
-            [ -n "$tag" ] || continue
-            echo "Deleting release $tag"
-            gh release delete --repo "$GITHUB_REPOSITORY" "$tag" --yes --cleanup-tag
-          done
+        uses: ./.github/actions/gh-release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            set -euo pipefail
+            # List up to 1000 releases so the keep-2 policy does not silently stop after 100 releases.
+            # gh targets this repo through the shared action (GH_REPO);
+            # do not pass --repo here.
+            tags=$(gh release list --limit 1000 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName')
+            echo "Releases (newest first):"
+            echo "$tags"
+            echo "$tags" | tail -n +3 | while read -r tag; do
+              [ -n "$tag" ] || continue
+              echo "Deleting release $tag"
+              gh release delete "$tag" --yes --cleanup-tag
+            done

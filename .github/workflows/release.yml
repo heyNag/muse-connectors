@@ -5,6 +5,10 @@
 # This workflow does NOT bump versions in files: the version in
 # connectors/bookmyshow/connector.yaml must already match the
 # version entered below, or this run fails.
+#
+# Releases are created ONLY through this workflow (see CONTRIBUTING.md).
+# The gh calls below run through the shared .github/actions/gh-release
+# action, which is the one place that targets this repo.
 name: Manual release
 
 "on":
@@ -31,40 +35,42 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create the release
+        uses: ./.github/actions/gh-release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            set -euo pipefail
+
+            # 1. Version format: date-based CalVer YYYY.MM.DD, with an
+            #    optional .N for extra releases the same day.
+            if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?$'; then
+              echo "ERROR: version '$VERSION' is not a valid CalVer version."
+              echo "Expected e.g. 2026.11.22.5 (YYYY.MM.DD, with an optional .N)."
+              exit 1
+            fi
+
+            # 2. Fail if the tag / release already exists.
+            if gh release view "$VERSION" >/dev/null 2>&1; then
+              echo "ERROR: release/tag '$VERSION' already exists."
+              echo "Pick a new version (bump the version in the files first) and try again."
+              exit 1
+            fi
+
+            # 3. The version in connector.yaml must already match the input.
+            #    This workflow does not bump versions in files.
+            FILE_VERSION=$(grep -E '^version:' connectors/bookmyshow/connector.yaml | sed -E 's/^version:[[:space:]]*"?([^"]*)"?[[:space:]]*$/\1/')
+            if [ "$FILE_VERSION" != "$VERSION" ]; then
+              echo "ERROR: connector.yaml version is '$FILE_VERSION', but you asked to release '$VERSION'."
+              echo "Bump the version in connector.yaml (and the version lines in CONNECTOR.md and README.md) first, commit and push it, then run this workflow again."
+              exit 1
+            fi
+
+            # 4. Create the release on the current main HEAD.
+            if [ -z "$NOTES" ]; then
+              NOTES="Release $VERSION."
+            fi
+            gh release create "$VERSION" --title "$VERSION" --notes "$NOTES"
+            echo "Released $VERSION."
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
           NOTES: ${{ inputs.notes }}
-        run: |
-          set -euo pipefail
-
-          # 1. Version format: date-based CalVer YYYY.MM.DD, with an
-          #    optional .N for extra releases the same day.
-          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?$'; then
-            echo "ERROR: version '$VERSION' is not a valid CalVer version."
-            echo "Expected e.g. 2026.11.22.5 (YYYY.MM.DD, with an optional .N)."
-            exit 1
-          fi
-
-          # 2. Fail if the tag / release already exists.
-          if gh release view --repo "$GITHUB_REPOSITORY" "$VERSION" >/dev/null 2>&1; then
-            echo "ERROR: release/tag '$VERSION' already exists."
-            echo "Pick a new version (bump the version in the files first) and try again."
-            exit 1
-          fi
-
-          # 3. The version in connector.yaml must already match the input.
-          #    This workflow does not bump versions in files.
-          FILE_VERSION=$(grep -E '^version:' connectors/bookmyshow/connector.yaml | sed -E 's/^version:[[:space:]]*"?([^"]*)"?[[:space:]]*$/\1/')
-          if [ "$FILE_VERSION" != "$VERSION" ]; then
-            echo "ERROR: connector.yaml version is '$FILE_VERSION', but you asked to release '$VERSION'."
-            echo "Bump the version in connector.yaml (and the version lines in CONNECTOR.md and README.md) first, commit and push it, then run this workflow again."
-            exit 1
-          fi
-
-          # 4. Create the release on the current main HEAD.
-          if [ -z "$NOTES" ]; then
-            NOTES="Release $VERSION."
-          fi
-          gh release create --repo "$GITHUB_REPOSITORY" "$VERSION" --title "$VERSION" --notes "$NOTES"
-          echo "Released $VERSION."

@@ -1,0 +1,33 @@
+# Shared gh setup for the release workflows.
+#
+# This is the ONE place that knows how gh talks to this repo: it runs the
+# caller's script with GH_TOKEN set and GH_REPO set to this repository,
+# so gh commands inside the script must NOT pass --repo themselves.
+# Both .github/workflows/release.yml and
+# .github/workflows/keep-latest-releases.yml call this action, so the
+# repo targeting cannot drift between them again (that drift is what
+# broke the keep-latest-2 workflow before: without a checkout, gh could
+# not work out which repo to act on).
+#
+# The token is passed in as an input because composite actions cannot
+# read secrets directly.
+name: "gh against this repo"
+description: "Run a bash script with the gh CLI authenticated against this repository."
+
+inputs:
+  token:
+    description: "GitHub token — pass ${{ secrets.GITHUB_TOKEN }}"
+    required: true
+  script:
+    description: "Bash script to run. gh is authenticated and targets this repo; do not pass --repo."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run script with gh
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        GH_REPO: ${{ github.repository }}
+      run: ${{ inputs.script }}
