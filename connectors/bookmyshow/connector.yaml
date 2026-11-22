@@ -1,6 +1,6 @@
 id: "custom.bookmyshow"
 title: "BookMyShow"
-version: "2026.11.22.6"
+version: "2026.11.22.7"
 description: "Search BookMyShow movies and live events, read showtimes, prices and venue details."
 icon: icon.png
 aliases: ["BMS"]
