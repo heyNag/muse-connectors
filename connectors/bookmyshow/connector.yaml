@@ -1,0 +1,7 @@
+id: "custom.bookmyshow"
+title: "BookMyShow"
+description: "Search BookMyShow movies and live events, read showtimes, prices and venue details."
+icon: icon.svg
+aliases: ["BMS"]
+include_in_prompt: true
+require_auth: false
