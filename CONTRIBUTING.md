@@ -31,11 +31,19 @@ The folder name, the `connector.yaml` `id`, and the installed folder name
 Versions are date-based CalVer, YYYY.MM.DD, with `.1`, `.2`, `.3` appended
 for extra releases on the same day (for example `2026.11.22`, then
 `2026.11.22.1`). Bump the version in `connector.yaml` and in the version
-lines in `CONNECTOR.md` and `README.md` for every release, and tag the
-release on GitHub with the same version number. Do not renumber `server/`;
+lines in `CONNECTOR.md` and `README.md` for every release; the Manual
+release workflow (see Releases below) then tags the release on GitHub
+with the same version number. Do not renumber `server/`;
 it is vendored upstream at its own version.
 
 ## Releases
+
+Releases are created only through the Manual release workflow: GitHub
+repo → Actions → "Manual release" → Run workflow, and enter the version
+and notes. Do not create a release directly from the GitHub web UI, the
+`gh` command line, or the API — that bypasses the workflow's version,
+tag, and version-file checks. Publishing a release automatically triggers
+the cleanup that keeps only the latest 2 releases.
 
 Only the latest 2 releases are kept. Older releases are deleted automatically
 when a new one is published (see
