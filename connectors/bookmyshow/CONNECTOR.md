@@ -8,6 +8,11 @@
 
 - The display name is BookMyShow and the icon is `icon.png` in this folder. The icon is the BookMyShow "my" ticket logo — a white ticket with red "my" on a red background, 400x400 PNG.
 
+## Version
+
+- Current version: **2026.11.0**, released 2026-11-22 — the first release.
+- Versions follow Charms' calendar scheme, YEAR.MONTH.RELEASE (for example 2026.11.0, then 2026.11.1 for the next change).
+
 ## Connect
 
 - There is no credential to connect. The scraper only reads public pages on `https://in.bookmyshow.com` and sends no login or payment details.
