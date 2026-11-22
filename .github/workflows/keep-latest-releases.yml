@@ -17,11 +17,13 @@ jobs:
         run: |
           set -euo pipefail
           # List up to 1000 releases so the keep-2 policy does not silently stop after 100 releases.
-          tags=$(gh release list --limit 1000 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName')
+          # --repo is required: this job does not check out the repo, so gh
+          # cannot work out which repository to act on from a git remote.
+          tags=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName')
           echo "Releases (newest first):"
           echo "$tags"
           echo "$tags" | tail -n +3 | while read -r tag; do
             [ -n "$tag" ] || continue
             echo "Deleting release $tag"
-            gh release delete "$tag" --yes --cleanup-tag
+            gh release delete --repo "$GITHUB_REPOSITORY" "$tag" --yes --cleanup-tag
           done
