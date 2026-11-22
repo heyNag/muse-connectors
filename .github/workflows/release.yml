@@ -1,26 +1,36 @@
-# Manual release workflow.
+# Manual release workflow — now automatic.
 #
-# Publishing a release here automatically triggers the keep-latest-2
-# workflow, which keeps only the latest 2 releases (and their tags).
-# This workflow does NOT bump versions in files: the version in
-# connectors/bookmyshow/connector.yaml and in the version lines in
-# connectors/bookmyshow/CONNECTOR.md and connectors/bookmyshow/README.md
-# must already match the version entered below, or this run fails.
+# Run it with no inputs and it computes the next version itself from
+# the latest release tag (date-based CalVer: if the latest tag is
+# today's date, the .N suffix is incremented; if it is an older date,
+# today's date is used with no suffix), bumps it in the three version
+# files, commits the bump to main, and creates the release. You may
+# still supply a version explicitly to override the computed one.
+#
+# The gh calls below run through the shared .github/actions/gh-release
+# action, which is the one place that targets this repo.
+#
+# NOTE: a release created here with GITHUB_TOKEN does NOT trigger other
+# workflows (GitHub does not cascade workflow runs from GITHUB_TOKEN),
+# so the keep-latest-2 cleanup does not fire automatically for a
+# release created by this workflow — the cleanup runs inline as the
+# last step below instead. .github/workflows/keep-latest-releases.yml
+# remains for releases created outside this workflow (e.g. the web UI),
+# where the release: published event does fire.
 #
 # Releases are created ONLY through this workflow (see CONTRIBUTING.md).
 # That is a convention, not an enforcement — GitHub cannot block direct
 # release creation; this workflow is the path we use.
-# The gh calls below run through the shared .github/actions/gh-release
-# action, which is the one place that targets this repo.
 name: Manual release
 
 "on":
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release, e.g. 2026.11.22.5 — must match the version in connector.yaml"
-        required: true
+        description: "Version to release — leave empty and the workflow computes the next one automatically, or enter one explicitly, e.g. 2026.11.22.6"
+        required: false
         type: string
+        default: ""
       notes:
         description: "Release notes; defaults to a short generic note if empty"
         required: false
@@ -37,47 +47,65 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Create the release
+      - name: Compute version, bump files, commit, and create the release
         uses: ./.github/actions/gh-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             set -euo pipefail
 
+            # 0. Compute the version.
+            #    If one was supplied, use it. Otherwise compute the next
+            #    one from the latest release tag: date-based CalVer
+            #    YYYY.MM.DD, with .N appended for extra releases the
+            #    same day. If the latest tag is today's date, increment
+            #    the .N suffix (or add .1); if it is an older date, use
+            #    today's date with no suffix. Tags sort lexicographically
+            #    in the same order as chronologically for CalVer.
+            TODAY=$(date +%Y.%m.%d)
+            if [ -n "${VERSION:-}" ]; then
+              echo "Using supplied version $VERSION."
+            else
+              LATEST=$(gh release list --limit 1000 --json tagName --jq 'sort_by(.tagName) | reverse | .[0].tagName // empty')
+              if [ -z "$LATEST" ]; then
+                VERSION="$TODAY"
+              elif [ "$LATEST" = "$TODAY" ]; then
+                VERSION="$TODAY.1"
+              elif [[ "$LATEST" == "$TODAY."* ]]; then
+                n="${LATEST#"$TODAY".}"
+                case "$n" in
+                  ''|*[!0-9]*) VERSION="$TODAY" ;;
+                  *) VERSION="$TODAY.$((n + 1))" ;;
+                esac
+              else
+                VERSION="$TODAY"
+              fi
+              echo "Computed next version $VERSION from latest release tag '${LATEST:-(none)}'."
+            fi
+
             # 1. Version format: date-based CalVer YYYY.MM.DD, with an
             #    optional .N for extra releases the same day.
             if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?$'; then
               echo "ERROR: version '$VERSION' is not a valid CalVer version."
-              echo "Expected e.g. 2026.11.22.5 (YYYY.MM.DD, with an optional .N)."
+              echo "Expected e.g. 2026.11.22.6 (YYYY.MM.DD, with an optional .N)."
               exit 1
             fi
 
-            # 2. Fail if the tag / release already exists.
-            #    Check both the release and the tag: an orphan tag with
-            #    no release would otherwise only fail later, at
-            #    `gh release create`, with a less clear error.
-            if gh release view "$VERSION" >/dev/null 2>&1; then
-              echo "ERROR: release '$VERSION' already exists."
-              echo "Pick a new version (bump the version in the files first) and try again."
-              exit 1
-            fi
-            if gh api "repos/$GH_REPO/git/ref/tags/$VERSION" >/dev/null 2>&1; then
-              echo "ERROR: tag '$VERSION' already exists (with no release)."
-              echo "Pick a new version (bump the version in the files first) and try again."
-              exit 1
-            fi
-
-            # 3. The version in all three version files must already match
-            #    the input. This workflow does not bump versions in files.
-            #    NOTE: this check is BookMyShow-specific — it reads the
+            # 2. Bump the version in all three version files.
+            #    NOTE: this is BookMyShow-specific — it reads the
             #    BookMyShow connector's files. When a second connector
-            #    lands, generalise it to check that connector's files too.
+            #    lands, generalise it to bump that connector's files too.
+            sed -i 's/^version: "[0-9.]*"/version: "'"$VERSION"'"/' connectors/bookmyshow/connector.yaml
+            sed -i 's/Current version: \*\*[0-9.]*\*\*/Current version: **'"$VERSION"'**/' connectors/bookmyshow/CONNECTOR.md
+            sed -i 's/^- Version: \*\*[0-9.]*\*\*/- Version: **'"$VERSION"'**/' connectors/bookmyshow/README.md
+
+            # 3. The version in all three files must now match.
             check_version_file() {
               file="$1"
               pattern="$2"
               found=$(grep -E "$pattern" "$file" | grep -oE '[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?' | head -n 1 || true)
               if [ "$found" != "$VERSION" ]; then
-                echo "ERROR: $file version is '${found:-(none found)}', but you asked to release '$VERSION'."
+                echo "ERROR: $file version is '${found:-(none found)}', expected '$VERSION' after the bump."
                 mismatched=1
               fi
             }
@@ -86,11 +114,35 @@ jobs:
             check_version_file "connectors/bookmyshow/CONNECTOR.md" 'Current version:'
             check_version_file "connectors/bookmyshow/README.md" '^- Version:'
             if [ "$mismatched" -ne 0 ]; then
-              echo "Bump the version in connector.yaml and in the version lines in CONNECTOR.md and README.md first, commit and push it, then run this workflow again."
+              echo "The automatic bump did not update every version file. Check the sed patterns above."
               exit 1
             fi
 
-            # 4. Create the release on main.
+            # 4. Commit the bump to main and push it.
+            git config user.name "Nag"
+            git config user.email "281079839+heyNag@users.noreply.github.com"
+            git add connectors/bookmyshow/connector.yaml connectors/bookmyshow/CONNECTOR.md connectors/bookmyshow/README.md
+            if git diff --cached --quiet; then
+              echo "Version files already at $VERSION; nothing to commit."
+            else
+              git commit -m "Bump version to $VERSION"
+              git push origin HEAD:main
+            fi
+
+            # 5. Fail if the tag / release already exists.
+            #    Check both the release and the tag: an orphan tag with
+            #    no release would otherwise only fail later, at
+            #    `gh release create`, with a less clear error.
+            if gh release view "$VERSION" >/dev/null 2>&1; then
+              echo "ERROR: release '$VERSION' already exists."
+              exit 1
+            fi
+            if gh api "repos/$GH_REPO/git/ref/tags/$VERSION" >/dev/null 2>&1; then
+              echo "ERROR: tag '$VERSION' already exists (with no release)."
+              exit 1
+            fi
+
+            # 6. Create the release on main.
             #    --target main pins the release to main even if this
             #    workflow was dispatched from another branch.
             if [ -z "$NOTES" ]; then
@@ -101,3 +153,26 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
           NOTES: ${{ inputs.notes }}
+
+      - name: Keep only the latest 2 releases
+        # Runs inline here because a release created above with
+        # GITHUB_TOKEN does not trigger the keep-latest-2 workflow
+        # (GitHub does not cascade workflow runs from GITHUB_TOKEN).
+        # Same logic as .github/workflows/keep-latest-releases.yml.
+        uses: ./.github/actions/gh-release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            set -euo pipefail
+            tags=$(gh release list --limit 1000 --json tagName --jq 'sort_by(.tagName) | reverse | .[].tagName')
+            echo "Releases (newest first):"
+            echo "$tags"
+            # The loop reads from a here-string, not a pipe, so it runs
+            # in this shell and a failed delete is not silently masked.
+            fail=0
+            while read -r tag; do
+              [ -n "$tag" ] || continue
+              echo "Deleting release $tag"
+              gh release delete "$tag" --yes --cleanup-tag || fail=1
+            done <<< "$(printf '%s\n' "$tags" | tail -n +3)"
+            exit "$fail"

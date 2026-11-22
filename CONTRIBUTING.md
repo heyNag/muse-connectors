@@ -30,22 +30,24 @@ The folder name, the `connector.yaml` `id`, and the installed folder name
 
 Versions are date-based CalVer, YYYY.MM.DD, with `.1`, `.2`, `.3` appended
 for extra releases on the same day (for example `2026.11.22`, then
-`2026.11.22.1`). Bump the version in `connector.yaml` and in the version
-lines in `CONNECTOR.md` and `README.md` for every release; the Manual
-release workflow (see Releases below) then tags the release on GitHub
-with the same version number. Do not renumber `server/`;
+`2026.11.22.1`). The Manual release workflow computes the next version
+and bumps it in `connector.yaml` and in the version lines in
+`CONNECTOR.md` and `README.md`, commits the bump, and tags the release
+on GitHub — do not bump versions by hand. Do not renumber `server/`;
 it is vendored upstream at its own version.
 
 ## Releases
 
 Releases are created only through the Manual release workflow: GitHub
-repo → Actions → "Manual release" → Run workflow, and enter the version
-and notes. Do not create a release directly from the GitHub web UI, the
+repo → Actions → "Manual release" → Run workflow, and enter notes
+(leave the version empty and the workflow computes the next one
+automatically, or enter a version to override it). Do not create a release directly from the GitHub web UI, the
 `gh` command line, or the API — that bypasses the workflow's version,
 tag, and version-file checks. This is a convention, not an enforcement —
 GitHub cannot block direct release creation; the workflow is the path we
-use. Publishing a release automatically triggers
-the cleanup that keeps only the latest 2 releases.
+use. The release workflow runs the keep-latest-2 cleanup itself at the
+end, because a release it creates does not trigger other workflows —
+so the cleanup that keeps only the latest 2 releases still happens.
 
 Only the latest 2 releases are kept. Older releases are deleted automatically
 when a new one is published (see

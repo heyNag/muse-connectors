@@ -21,13 +21,15 @@ Versions are date-based CalVer, YYYY.MM.DD, with `.1`, `.2`, `.3` appended for e
 ## Releases
 
 Releases are created only through the Manual release workflow: GitHub
-repo → Actions → "Manual release" → Run workflow, and enter the version
-and notes. Do not create a release directly from the GitHub web UI, the
+repo → Actions → "Manual release" → Run workflow, and enter notes
+(leave the version empty and the workflow computes the next one
+automatically, or enter a version to override it). Do not create a release directly from the GitHub web UI, the
 `gh` command line, or the API — that bypasses the workflow's version,
 tag, and version-file checks. This is a convention, not an enforcement —
 GitHub cannot block direct release creation; the workflow is the path we
-use. Publishing a release automatically triggers
-the cleanup that keeps only the latest 2 releases.
+use. The release workflow runs the keep-latest-2 cleanup itself at the
+end, because a release it creates does not trigger other workflows —
+so the cleanup that keeps only the latest 2 releases still happens.
 
 Only the latest 2 releases are kept. Older releases are deleted automatically when a new one is published, so always install the latest. Releases and their tags are deleted, only the latest 2 remain.
 
