@@ -24,13 +24,22 @@ jobs:
           script: |
             set -euo pipefail
             # List up to 1000 releases so the keep-2 policy does not silently stop after 100 releases.
+            # Sort by tag name, newest first: CalVer tags sort
+            # lexicographically in the same order as chronologically,
+            # which is more robust than createdAt if a release is ever
+            # published out of order.
             # gh targets this repo through the shared action (GH_REPO);
             # do not pass --repo here.
-            tags=$(gh release list --limit 1000 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName')
+            tags=$(gh release list --limit 1000 --json tagName --jq 'sort_by(.tagName) | reverse | .[].tagName')
             echo "Releases (newest first):"
             echo "$tags"
-            echo "$tags" | tail -n +3 | while read -r tag; do
+            # The loop reads from a here-string, not a pipe, so it runs
+            # in this shell and a failed delete is not silently masked:
+            # the pipeline's exit status would be the last iteration's.
+            fail=0
+            while read -r tag; do
               [ -n "$tag" ] || continue
               echo "Deleting release $tag"
-              gh release delete "$tag" --yes --cleanup-tag
-            done
+              gh release delete "$tag" --yes --cleanup-tag || fail=1
+            done <<< "$(printf '%s\n' "$tags" | tail -n +3)"
+            exit "$fail"

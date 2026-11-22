@@ -24,7 +24,9 @@ Releases are created only through the Manual release workflow: GitHub
 repo → Actions → "Manual release" → Run workflow, and enter the version
 and notes. Do not create a release directly from the GitHub web UI, the
 `gh` command line, or the API — that bypasses the workflow's version,
-tag, and version-file checks. Publishing a release automatically triggers
+tag, and version-file checks. This is a convention, not an enforcement —
+GitHub cannot block direct release creation; the workflow is the path we
+use. Publishing a release automatically triggers
 the cleanup that keeps only the latest 2 releases.
 
 Only the latest 2 releases are kept. Older releases are deleted automatically when a new one is published, so always install the latest. Releases and their tags are deleted, only the latest 2 remain.
