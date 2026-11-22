@@ -1,0 +1,26 @@
+name: Keep latest release only
+
+"on":
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  keep-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete older releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tags=$(gh release list --limit 100 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName')
+          latest=$(echo "$tags" | head -n 1)
+          echo "Latest release: $latest"
+          echo "$tags" | tail -n +2 | while read -r tag; do
+            [ -n "$tag" ] || continue
+            echo "Deleting release $tag"
+            gh release delete "$tag" --yes --cleanup-tag
+          done

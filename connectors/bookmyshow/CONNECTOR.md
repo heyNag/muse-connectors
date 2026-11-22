@@ -10,7 +10,7 @@
 
 ## Version
 
-- Current version: **2026.11.22.1**, released 2026-11-22 — the second release of the day, adding install, update and uninstall instructions to the README.
+- Current version: **2026.11.22.2**, released 2026-11-22 — the third release of the day, adding LICENSE, example usage, troubleshooting and a contributing guide.
 - Versions are date-based CalVer, YYYY.MM.DD, with .1, .2, .3 appended for extra releases on the same day (for example 2026.11.22, then 2026.11.22.1). This supersedes the briefly-published 2026.11.0.
 
 ## Connect

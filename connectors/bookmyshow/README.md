@@ -4,7 +4,7 @@ A Muse connector for BookMyShow. Search movies and live events, read showtimes, 
 
 - Display name: **BookMyShow**
 - Internal Muse slug: `custom.bookmyshow`
-- Version: **2026.11.22.1** (2026-11-22, second release of the day; date-based CalVer YYYY.MM.DD, with .1/.2/.3 for extra releases the same day; supersedes 2026.11.22 and the briefly-published 2026.11.0)
+- Version: **2026.11.22.2** (2026-11-22, third release of the day; date-based CalVer YYYY.MM.DD, with .1/.2/.3 for extra releases the same day; adds LICENSE, example usage, troubleshooting and a contributing guide)
 - No login, no API key needed. It reads public BookMyShow pages.
 
 ## Tools
@@ -13,9 +13,26 @@ A Muse connector for BookMyShow. Search movies and live events, read showtimes, 
 
 See [CONNECTOR.md](CONNECTOR.md) for the full connector documentation.
 
+## Example usage
+
+Once installed, ask Muse things like:
+
+- "Search BookMyShow for Dear Jim Carrey in Hyderabad"
+- "What movies are playing in Hyderabad?"
+- "What comedy shows are on in Bengaluru this weekend?"
+
+To call a tool directly, write the arguments as a JSON file and pass it with `--arguments-file`:
+
+```bash
+echo '{"query": "Dear Jim Carrey", "city": "hyderabad"}' > /tmp/bms-args/search.json
+python3 bin/client.py call-tool --name bms_search --arguments-file /tmp/bms-args/search.json
+```
+
 ## Install
 
 There is no one-click install for Muse custom connectors yet — installing is copying the connector folder into Muse's custom-connectors folder.
+
+Tested with Python 3.12.3; dependencies are listed in `server/requirements.txt`.
 
 ```bash
 # 1. Clone the repo
@@ -70,6 +87,12 @@ rm -rf ~/workspace/custom-connectors/custom.bookmyshow
 You can also delete the cloned `muse-connectors` repo if you no longer need it. There is no credential to revoke, since this connector uses no login or API key.
 
 The MCP server source in `server/` is the public `m0han-r/bookmyshow-mcp-webscraper` repo, pinned at commit `848707a12c2679d9414fb6184b64bd9f5df57c7d` (MIT).
+
+## Troubleshooting
+
+- **`list-tools` fails with `ModuleNotFoundError`** — the dependencies are not installed, or you are not using the venv. Re-run `.venv/bin/pip install -r server/requirements.txt` from the installed connector folder, then try `python3 bin/client.py list-tools` again.
+- **Tools return empty lists** — most likely BookMyShow's Cloudflare protection returned HTTP 403 to the scraper from your machine. An empty result is not proof that an event does not exist. Use the browser route on BookMyShow for live searches instead.
+- **Muse does not discover the connector** — check that the installed folder is exactly `~/workspace/custom-connectors/custom.bookmyshow`, matching the `id: "custom.bookmyshow"` in `connector.yaml`, and that `connector.yaml` is present in that folder.
 
 ## Limitation
 
