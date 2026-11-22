@@ -4,7 +4,7 @@ A Muse connector for BookMyShow. Search movies and live events, read showtimes, 
 
 - Display name: **BookMyShow**
 - Internal Muse slug: `custom.bookmyshow`
-- Version: **2026.11.0** (2026-11-22, first release; versions follow Charms' calendar scheme, YEAR.MONTH.RELEASE)
+- Version: **2026.11.22** (2026-11-22, first release; date-based CalVer YYYY.MM.DD, with .1/.2/.3 for extra releases the same day; supersedes the briefly-published 2026.11.0)
 - No login, no API key needed. It reads public BookMyShow pages.
 
 ## Tools

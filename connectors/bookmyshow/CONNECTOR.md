@@ -10,8 +10,8 @@
 
 ## Version
 
-- Current version: **2026.11.0**, released 2026-11-22 — the first release.
-- Versions follow Charms' calendar scheme, YEAR.MONTH.RELEASE (for example 2026.11.0, then 2026.11.1 for the next change).
+- Current version: **2026.11.22**, released 2026-11-22 — the first release.
+- Versions are date-based CalVer, YYYY.MM.DD, with .1, .2, .3 appended for extra releases on the same day (for example 2026.11.22, then 2026.11.22.1). This supersedes the briefly-published 2026.11.0.
 
 ## Connect
 
