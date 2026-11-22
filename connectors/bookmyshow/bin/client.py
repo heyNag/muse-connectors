@@ -99,7 +99,7 @@ def main():
     if args.command == "call-tool":
         if args.name not in ALLOWED_TOOLS:
             parser.error(
-                "Inspect this operation's schema and add its exact name to ALLOWED_TOOLS"
+                f"Unknown tool: {args.name}. This connector supports only the 7 listed tools."
             )
         arguments = json.loads(args.arguments_file.read_bytes())
         if not isinstance(arguments, dict):

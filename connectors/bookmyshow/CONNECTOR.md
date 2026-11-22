@@ -10,7 +10,7 @@
 
 ## Version
 
-- Current version: **2026.11.22.3**
+- Current version: **2026.11.22.4**
 - Versions are date-based CalVer, YYYY.MM.DD, with .1, .2, .3 appended for extra releases on the same day.
 
 ## Connect
@@ -21,7 +21,10 @@
 
 - Verify the connector works with a harmless read:
 
+Run these commands from the installed folder:
+
 ```text
+cd ~/workspace/custom-connectors/custom.bookmyshow
 python3 bin/client.py list-tools
 ```
 
@@ -29,13 +32,13 @@ python3 bin/client.py list-tools
 
 ## Credentials
 
-- This connector uses no credential. Helpers never put a key or token or password or cookie in this doc or a helper or a command argument or an environment variable or a log.
+- This connector uses no credential. This connector uses no key, token, password or cookie.
 
-- Never ask the user to paste a BookMyShow password or one time code in chat for this connector. Booking and sign in stay with the browser route.
+- This connector never asks for a BookMyShow password or one-time code; booking and sign-in stay in the browser.
 
 ## List tools
 
-- List every tool the server offers and read each input schema before calling a tool the task needs.
+- Use `list-tools` to see the tools the server offers, with each tool's input schema.
 
 ```text
 python3 bin/client.py list-tools
@@ -53,7 +56,7 @@ bms_get_venue_details
 bms_search
 ```
 
-- Write each call's arguments as one JSON object in a file and pass that file with `--arguments-file`. Keep credentials out of that file because this connector uses none.
+- Write each call's arguments as one JSON object in a file and pass that file with `--arguments-file`. Keep credentials out of that file because this connector uses none. Every call needs an arguments file, even a call with no arguments — use a file containing `{}`.
 
 ## Get cities
 
@@ -63,9 +66,13 @@ bms_search
 python3 bin/client.py call-tool --name bms_get_cities --arguments-file cities.json
 ```
 
-- The arguments file holds one object with an optional `popular_only` boolean. With `popular_only` set to true the tool returns only the 10 popular cities.
+- The arguments file holds one object with an optional `popular_only` boolean. With `popular_only` set to true the tool returns only the 10 popular cities. Example:
 
-- Verified on 2026-11-22 that this tool returns the 10 popular cities including Hyderabad with code HYD and slug hyderabad. The scraper falls back to a hardcoded popular cities list when its page fetch fails, so a working cities result does not prove live scraping works.
+```json
+{"popular_only": true}
+```
+
+- Returns the popular cities (e.g. Hyderabad, HYD / hyderabad). The scraper falls back to a hardcoded popular cities list when its page fetch fails, so a working cities result does not prove live scraping works.
 
 ## Get movies in a city
 
@@ -75,7 +82,11 @@ python3 bin/client.py call-tool --name bms_get_cities --arguments-file cities.js
 python3 bin/client.py call-tool --name bms_get_movies --arguments-file movies-hyd.json
 ```
 
-- The arguments file holds one object with `city` as a slug such as hyderabad or bengaluru or mumbai and optional `language` and `genre` strings.
+- The arguments file holds one object with `city` as a slug such as hyderabad or bengaluru or mumbai (optional, defaults to `mumbai`) and optional `language` and `genre` strings. Example:
+
+```json
+{"city": "hyderabad", "language": "Hindi", "genre": "Comedy"}
+```
 
 - The result is a list of movie summaries with title and code and languages and genres and a price range when the page supplies one.
 
@@ -87,7 +98,11 @@ python3 bin/client.py call-tool --name bms_get_movies --arguments-file movies-hy
 python3 bin/client.py call-tool --name bms_get_events --arguments-file events-hyd-comedy.json
 ```
 
-- The arguments file holds one object with `city` as a slug and optional `category` as one of events or comedy-shows or music-shows or sports.
+- The arguments file holds one object with `city` as a slug (optional, defaults to `mumbai`) and optional `category` as one of events or comedy-shows or music-shows or sports. Example:
+
+```json
+{"city": "hyderabad", "category": "comedy-shows"}
+```
 
 - The result is a list of event summaries with title and code and date and venue name when the page supplies them.
 
@@ -99,7 +114,11 @@ python3 bin/client.py call-tool --name bms_get_events --arguments-file events-hy
 python3 bin/client.py call-tool --name bms_search --arguments-file search-hyd.json
 ```
 
-- The arguments file holds one object with a required `query` string and `city` as a slug. The tool searches only the movies and events lists the scraper fetched for that city, so it finds nothing when those lists come back empty.
+- The arguments file holds one object with a required `query` string and `city` as a slug (optional, defaults to `mumbai`). The tool searches only the movies and events lists the scraper fetched for that city, so it finds nothing when those lists come back empty. Example:
+
+```json
+{"query": "standup comedy", "city": "hyderabad"}
+```
 
 - The result holds two lists named `movies` and `events` with matching titles and codes.
 
@@ -111,7 +130,11 @@ python3 bin/client.py call-tool --name bms_search --arguments-file search-hyd.js
 python3 bin/client.py call-tool --name bms_get_movie_details --arguments-file details-bng.json
 ```
 
-- The arguments file holds one object with a required `movie_code` string (the code shown on the event page) and `city` as a slug.
+- The arguments file holds one object with a required `movie_code` string (the code shown on the event page, or a full BookMyShow movie page URL) and `city` as a slug (optional, defaults to `mumbai`). Example:
+
+```json
+{"movie_code": "ET00378770", "city": "mumbai"}
+```
 
 - The result holds title and code and synopsis and duration and censor rating and rating score and languages and genres and poster and banner URLs and trailers and cast and crew when the page supplies them.
 
@@ -123,7 +146,11 @@ python3 bin/client.py call-tool --name bms_get_movie_details --arguments-file de
 python3 bin/client.py call-tool --name bms_get_showtimes --arguments-file showtimes-bng.json
 ```
 
-- The arguments file holds one object with a required `movie_code` string and `city` as a slug and optional `date` in YYYYMMDD or YYYY-MM-DD form and optional `language` and `format` strings. The language value `all` aggregates all languages.
+- The arguments file holds one object with a required `movie_code` string (or a full BookMyShow buy-tickets URL) and `city` as a slug (optional, defaults to `mumbai`) and optional `date` in YYYYMMDD or YYYY-MM-DD form and optional `language` and `format` strings. The language value `all` aggregates all languages. Example:
+
+```json
+{"movie_code": "ET00378770", "city": "chennai", "date": "20260827", "language": "tamil", "format": "2D"}
+```
 
 - The result is a list of venues with venue code and name and showtimes and screen formats and price ranges and seat availability when the page supplies them.
 
@@ -135,26 +162,30 @@ python3 bin/client.py call-tool --name bms_get_showtimes --arguments-file showti
 python3 bin/client.py call-tool --name bms_get_venue_details --arguments-file venue.json
 ```
 
-- The arguments file holds one object with a required `venue_code` string such as PCAN and `city` as a slug.
+- The arguments file holds one object with a required `venue_code` string such as PCAN (or a full BookMyShow venue page URL) and `city` as a slug (optional, defaults to `mumbai`). Example:
+
+```json
+{"venue_code": "PCAN", "city": "chennai"}
+```
 
 - The result holds venue name and street address and postal code and latitude and longitude and facilities such as parking and food court and M-Ticket when the page supplies them.
 
 ## Recover from errors
 
-- A call that returns `isError` true means the tool itself failed. The client exits with status 1 and prints the tool error. Do not replay the call until you have read the error.
+- A call that returns `isError` true means the tool itself failed. The client exits with status 1 and prints the tool error. Read the error before retrying the call.
 
-- A call that returns an empty list or an empty object with `isError` false means the scraper fetched nothing usable. Check whether the live site is reachable from this machine before you treat an empty result as proof that no event exists.
+- A call that returns an empty list or an empty object with `isError` false means the scraper fetched nothing usable. Check whether the live site is reachable from your machine before you treat an empty result as proof that no event exists.
 
 - A 403 from BookMyShow means Cloudflare blocked the scraper request. Retrying the same call will not help and trying to bypass the block is out of scope for this connector. Use the browser route on BookMyShow instead, because a real browser passes the check.
 
 ## Limits
 
-- BookMyShow's Cloudflare protection can return HTTP 403 to the scraper from some machines. The tools still run and return well-formed empty results instead of erroring, so an empty result from this connector does not prove that an event does not exist. Empty results were also seen for a known-live event, so empty does not prove absence.
+- BookMyShow's Cloudflare protection can return HTTP 403 to the scraper from some machines. The tools still run and return well-formed empty results instead of erroring, so an empty result from this connector does not prove that an event does not exist.
 
 - The connector cannot book tickets and cannot select seats and cannot add to a cart and cannot pay. Booking stays with the browser route on BookMyShow.
 
 - The connector cannot sign in to BookMyShow and cannot read a signed in account or past bookings.
 
-- Each client call spawns a fresh MCP server process, so the scraper in memory cache of 300 seconds does not persist across calls. The scraper timeout is 12 seconds per page fetch.
+- Each client call spawns a fresh MCP server process, so the scraper's in-memory cache of 300 seconds does not persist across calls. The scraper timeout is 12 seconds per page fetch.
 
 - Only the stdio MCP server is supported by this connector; the bundled REST server/CLI are untested.

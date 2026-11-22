@@ -3,8 +3,9 @@
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
 [![MCP Server](https://img.shields.io/badge/MCP%20Server-supported-purple.svg)](#-mcp-server-setup)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#-running-tests)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](../../../LICENSE)
+
+> **Note:** This file is the upstream project's own README, vendored at pinned commit `848707a12c2679d9414fb6184b64bd9f5df57c7d` of `m0han-r/bookmyshow-mcp-webscraper`. Its install instructions (cloning upstream, Claude Desktop / Cursor / Antigravity setup) are upstream's own, not this connector's install path — follow the connector README in `connectors/bookmyshow/README.md` instead.
 
 A Python scraper and API wrapper for [BookMyShow](https://in.bookmyshow.com) that extracts movie listings, theater showtimes, ticket prices, and venue location details (including GPS latitude and longitude).
 

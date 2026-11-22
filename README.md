@@ -20,7 +20,7 @@ Versions are date-based CalVer, YYYY.MM.DD, with `.1`, `.2`, `.3` appended for e
 
 ## Releases
 
-Only the latest 2 releases are kept. Older releases are deleted automatically when a new one is published, so always install the latest.
+Only the latest 2 releases are kept. Older releases are deleted automatically when a new one is published, so always install the latest. Releases and their tags are deleted, only the latest 2 remain.
 
 ## Contributing
 

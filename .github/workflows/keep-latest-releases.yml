@@ -16,7 +16,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          tags=$(gh release list --limit 100 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName')
+          # List up to 1000 releases so the keep-2 policy does not silently stop after 100 releases.
+          tags=$(gh release list --limit 1000 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName')
           echo "Releases (newest first):"
           echo "$tags"
           echo "$tags" | tail -n +3 | while read -r tag; do
