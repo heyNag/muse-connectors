@@ -6,7 +6,7 @@
 
 - Helpers live in `connectors/bookmyshow/bin/`. The helper is `client.py` and it spawns the MCP server as a child process and exposes its tools as `list-tools` and `call-tool` commands.
 
-- The display name is BookMyShow and the icon is `icon.svg` in this folder. The icon is a BookMyShow wordmark in white text with a red ticket mark on a dark navy background. (The original 600x600 PNG could not be pushed through the GitHub text-only snapshot; the SVG is the published icon.)
+- The display name is BookMyShow and the icon is `icon.png` in this folder. The icon is the BookMyShow "my" ticket logo — a white ticket with red "my" on a red background, 400x400 PNG.
 
 ## Connect
 
