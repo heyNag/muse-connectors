@@ -16,7 +16,7 @@ description: "Run a bash script with the gh CLI authenticated against this repos
 
 inputs:
   token:
-    description: "GitHub token — pass ${{ secrets.GITHUB_TOKEN }}"
+    description: "GitHub token to run gh with (pass the workflow's GITHUB_TOKEN secret)"
     required: true
   script:
     description: "Bash script to run. gh is authenticated and targets this repo; do not pass --repo."
