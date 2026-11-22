@@ -2,7 +2,7 @@
 
 This repo is a collection of Muse connectors. Each connector lives in its
 own folder under `connectors/` and is released independently, but they share
-the versioning scheme and the commit identity below.
+the versioning scheme below.
 
 ## Adding a new connector
 
@@ -37,15 +37,6 @@ release on GitHub with the same version number.
 Only the latest 2 releases are kept. Older releases are deleted automatically
 when a new one is published (see
 `.github/workflows/keep-latest-releases.yml`), so always install the latest.
-
-## Commits
-
-Commit as **Nag, 281079839+heyNag@users.noreply.github.com** — author and
-committer — so all commits across repos are consistent.
-
-Binary files (such as `icon.png`) cannot go through the Muse GitHub App's
-text-only `push_files`; push them with Composio
-`GITHUB_COMMIT_MULTIPLE_FILES` using base64 encoding for the binary file.
 
 ## License
 
