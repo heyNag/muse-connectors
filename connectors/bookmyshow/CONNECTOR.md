@@ -10,7 +10,7 @@
 
 ## Version
 
-- Current version: **2026.11.22.4**
+- Current version: **2026.11.22.5**
 - Versions are date-based CalVer, YYYY.MM.DD, with .1, .2, .3 appended for extra releases on the same day.
 
 ## Connect
