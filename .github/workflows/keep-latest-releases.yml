@@ -1,4 +1,4 @@
-name: Keep latest release only
+name: Keep latest 2 releases only
 
 "on":
   release:
@@ -8,18 +8,18 @@ permissions:
   contents: write
 
 jobs:
-  keep-latest:
+  keep-latest-2:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete older releases
+      - name: Delete releases older than the latest 2
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           tags=$(gh release list --limit 100 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName')
-          latest=$(echo "$tags" | head -n 1)
-          echo "Latest release: $latest"
-          echo "$tags" | tail -n +2 | while read -r tag; do
+          echo "Releases (newest first):"
+          echo "$tags"
+          echo "$tags" | tail -n +3 | while read -r tag; do
             [ -n "$tag" ] || continue
             echo "Deleting release $tag"
             gh release delete "$tag" --yes --cleanup-tag

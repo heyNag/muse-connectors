@@ -34,9 +34,9 @@ release on GitHub with the same version number.
 
 ## Releases
 
-Only the latest release is kept. Older releases are deleted automatically
+Only the latest 2 releases are kept. Older releases are deleted automatically
 when a new one is published (see
-`.github/workflows/keep-latest-release.yml`), so always install the latest.
+`.github/workflows/keep-latest-releases.yml`), so always install the latest.
 
 ## Commits
 
